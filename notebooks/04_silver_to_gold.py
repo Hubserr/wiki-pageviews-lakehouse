@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 from pyspark.sql import functions as F
 from pyspark.sql import Window
 NON_ARTICLE_NAMESPACES = [
@@ -46,7 +50,14 @@ df_top_articles = (spark.read.table("workspace.silver.pageviews")
 
 df_top_articles.write.format("delta").mode("overwrite").saveAsTable("workspace.gold.pl_top_articles_hourly")
 
+
+    
+
+# COMMAND ----------
+
+
+
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC COMMENT ON TABLE workspace.gold.top_articles_in_poland IS 'Top 100 most viewed articles of Polish Wikipedia (pl + pl.m, desktop and mobile summed) per hour. One row per hour and rank. Non-article namespaces excluded. Timestamps in UTC.'
+# MAGIC COMMENT ON TABLE workspace.gold.pl_top_articles_hourly IS 'Top 100 most viewed articles of Polish Wikipedia (pl + pl.m, desktop and mobile summed) per hour. One row per hour and rank. Non-article namespaces excluded. Timestamps in UTC.'
