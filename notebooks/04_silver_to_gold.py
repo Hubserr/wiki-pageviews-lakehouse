@@ -16,6 +16,8 @@ NON_ARTICLE_NAMESPACES = [
     "Portal_talk", "Module", "Module_talk", "MediaWiki_talk",
     "pl",
 ]
+PROCESS_DATE = "2026-10-09"
+condition = f"view_date='{PROCESS_DATE}'"
 
 
 
@@ -30,17 +32,18 @@ hourly_rank_window = (
 )
 
 df_top_articles = (spark.read.table("workspace.silver.pageviews")
-    .filter(F.col("domain_code").isin("pl","pl.m"))
-    .withColumn("prefix",F.regexp_extract(F.col("page_title"),r"^([^:]+):",1))
-    .filter(
-        (~F.col("prefix").isin(*NON_ARTICLE_NAMESPACES))
-        &(~F.col("prefix").startswith("Dyskusja"))
-        )
-    .groupBy("view_date","view_hour_utc","page_title")
-    .agg(F.sum("view_count").alias("total_views"))
-    .withColumn("rank",F.row_number().over(hourly_rank_window))
-    .filter(F.col("rank")<=100)
-    .select("view_date","view_hour_utc","rank","page_title","total_views")
+                .filter(F.col("view_date") == PROCESS_DATE)
+                .filter(F.col("domain_code").isin("pl","pl.m"))
+                .withColumn("prefix",F.regexp_extract(F.col("page_title"),r"^([^:]+):",1))
+                .filter(
+                    (~F.col("prefix").isin(*NON_ARTICLE_NAMESPACES))
+                    &(~F.col("prefix").startswith("Dyskusja"))
+                    )
+                .groupBy("view_date","view_hour_utc","page_title")
+                .agg(F.sum("view_count").alias("total_views"))
+                .withColumn("rank",F.row_number().over(hourly_rank_window))
+                .filter(F.col("rank")<=100)
+                .select("view_date","view_hour_utc","rank","page_title","total_views")
 )
 
 
@@ -48,13 +51,7 @@ df_top_articles = (spark.read.table("workspace.silver.pageviews")
 
 # COMMAND ----------
 
-df_top_articles.write.format("delta").mode("overwrite").saveAsTable("workspace.gold.pl_top_articles_hourly")
-
-
-    
-
-# COMMAND ----------
-
+df_top_articles.write.format("delta").mode("overwrite").option("replaceWhere",condition).saveAsTable("workspace.gold.pl_top_articles_hourly")
 
 
 # COMMAND ----------

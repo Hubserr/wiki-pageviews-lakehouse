@@ -1,7 +1,18 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 from pyspark.sql import functions as F
+from datetime import datetime
 
-df_silver = (spark.read.table("workspace.bronze.pageviews_raw")
+PROCESS_DATE = "2026-10-09"
+dt = datetime.strptime(PROCESS_DATE, "%Y-%m-%d")
+bronze_condition = f"_source_file LIKE '%/{dt:%Y/%m/%d}/%'"
+silver_condition = f"view_date = '{PROCESS_DATE}'"  
+
+df_silver_day = (spark.read.table("workspace.bronze.pageviews_raw")
+            .filter(bronze_condition)
             .withColumn("parts",F.split(F.col("value"), " "))
             .withColumn("domain_code",F.col("parts").getItem(0))
             .withColumn("page_title",F.col("parts").getItem(1))
@@ -14,9 +25,4 @@ df_silver = (spark.read.table("workspace.bronze.pageviews_raw")
 
 # COMMAND ----------
 
-df_silver.write.format("delta").mode("overwrite").saveAsTable("workspace.silver.pageviews")
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC COMMENT ON TABLE workspace.silver.pageviews IS 'Hourly Wikimedia pageviews: one row per project (domain_code), page title and hour. All timestamps are in UTC. Source: Wikimedia pageviews dumps via bronze.pageviews_raw.'
+df_silver_day.write.format("delta").mode("overwrite").option("replaceWhere",silver_condition).saveAsTable("workspace.silver.pageviews")

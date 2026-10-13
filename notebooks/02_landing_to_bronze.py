@@ -5,7 +5,7 @@
 # ///
 from datetime import datetime
 from pyspark.sql import functions as F
-PROCESS_DATE = "2026-10-08"
+PROCESS_DATE = "2026-10-09"
 LANDING_PATH = "/Volumes/workspace/landing/wikimedia/pageviews"
 
 # COMMAND ----------
@@ -19,4 +19,5 @@ df_bronze = ( spark.read.text(day_pattern)
 
 # COMMAND ----------
 
-df_bronze.write.format("delta").mode("overwrite").saveAsTable("workspace.bronze.pageviews_raw")
+condition = f"_source_file LIKE '%/{dt:%Y/%m/%d}/%'"
+df_bronze.write.format("delta").mode("overwrite").option("replaceWhere",condition).saveAsTable("workspace.bronze.pageviews_raw")

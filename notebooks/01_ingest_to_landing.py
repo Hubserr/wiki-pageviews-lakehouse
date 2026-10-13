@@ -6,7 +6,7 @@
 import os 
 import requests
 from datetime import datetime, timedelta
-PROCESS_DATE = "2026-10-08"
+PROCESS_DATE = "2026-10-09"
 BASE_URL = "https://dumps.wikimedia.org/other/pageviews"
 LANDING_PATH = "/Volumes/workspace/landing/wikimedia/pageviews"
 USER_AGENT = "wiki-pageviews-lakehouse/0.1 (https://github.com/Hubserr/wiki-pageviews-lakehouse)"
