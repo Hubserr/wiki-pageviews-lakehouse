@@ -11,3 +11,10 @@ __pycache__/
 
 .vscode/
 Thumbs.db
+
+notebooks/explore/
+
+profiles.yml
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
