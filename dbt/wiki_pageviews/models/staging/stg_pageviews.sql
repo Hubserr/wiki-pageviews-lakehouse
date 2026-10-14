@@ -1,0 +1,1 @@
+SELECT domain_code, page_title, view_hour_utc, view_date, view_count FROM {{ source('silver','pageviews')}}
