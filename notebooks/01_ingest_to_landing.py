@@ -6,7 +6,10 @@
 import os 
 import requests
 from datetime import datetime, timedelta
-PROCESS_DATE = "2026-10-09"
+dbutils.widgets.text("process_date","2026-10-09","Process date (YYYY-MM-DD)")
+PROCESS_DATE = dbutils.widgets.get("process_date")
+dt = datetime.strptime(PROCESS_DATE, "%Y-%m-%d")
+
 BASE_URL = "https://dumps.wikimedia.org/other/pageviews"
 LANDING_PATH = "/Volumes/workspace/landing/wikimedia/pageviews"
 USER_AGENT = "wiki-pageviews-lakehouse/0.1 (https://github.com/Hubserr/wiki-pageviews-lakehouse)"
@@ -43,7 +46,7 @@ def download_file(url,target_path):
 
 # COMMAND ----------
 
-start = datetime.strptime(PROCESS_DATE, "%Y-%m-%d")
+start = dt
 downloaded =[]
 skipped = []
 failed = []

@@ -5,12 +5,13 @@
 # ///
 from datetime import datetime
 from pyspark.sql import functions as F
-PROCESS_DATE = "2026-10-09"
+dbutils.widgets.text("process_date","2026-10-08","Process date (YYYY-MM-DD)")
+PROCESS_DATE = dbutils.widgets.get("process_date")
+dt = datetime.strptime(PROCESS_DATE, "%Y-%m-%d")
 LANDING_PATH = "/Volumes/workspace/landing/wikimedia/pageviews"
 
 # COMMAND ----------
 
-dt = datetime.strptime(PROCESS_DATE, "%Y-%m-%d")
 day_pattern = f"{LANDING_PATH}/{dt:%Y/%m/%d}/pageviews-*.gz"
 
 df_bronze = ( spark.read.text(day_pattern)

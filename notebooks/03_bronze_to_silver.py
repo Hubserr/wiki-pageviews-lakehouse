@@ -6,10 +6,14 @@
 from pyspark.sql import functions as F
 from datetime import datetime
 
-PROCESS_DATE = "2026-10-09"
+dbutils.widgets.text("process_date","2026-10-09","Process date (YYYY-MM-DD)")
+PROCESS_DATE = dbutils.widgets.get("process_date")
 dt = datetime.strptime(PROCESS_DATE, "%Y-%m-%d")
 bronze_condition = f"_source_file LIKE '%/{dt:%Y/%m/%d}/%'"
 silver_condition = f"view_date = '{PROCESS_DATE}'"  
+
+
+# COMMAND ----------
 
 df_silver_day = (spark.read.table("workspace.bronze.pageviews_raw")
             .filter(bronze_condition)

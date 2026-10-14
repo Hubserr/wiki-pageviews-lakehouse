@@ -5,6 +5,7 @@
 # ///
 from pyspark.sql import functions as F
 from pyspark.sql import Window
+from datetime import datetime
 NON_ARTICLE_NAMESPACES = [
     "Specjalna", "Media", "Wikipedia", "Wikipedysta", "Wikipedystka",
     "Użytkownik", "Użytkowniczka", "Plik", "Grafika", "MediaWiki",
@@ -16,7 +17,11 @@ NON_ARTICLE_NAMESPACES = [
     "Portal_talk", "Module", "Module_talk", "MediaWiki_talk",
     "pl",
 ]
-PROCESS_DATE = "2026-10-09"
+
+dbutils.widgets.text("process_date","2026-10-09","Process date (YYYY-MM-DD)")
+PROCESS_DATE = dbutils.widgets.get("process_date")
+dt = datetime.strptime(PROCESS_DATE, "%Y-%m-%d")
+
 condition = f"view_date='{PROCESS_DATE}'"
 
 
@@ -52,9 +57,3 @@ df_top_articles = (spark.read.table("workspace.silver.pageviews")
 # COMMAND ----------
 
 df_top_articles.write.format("delta").mode("overwrite").option("replaceWhere",condition).saveAsTable("workspace.gold.pl_top_articles_hourly")
-
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC COMMENT ON TABLE workspace.gold.pl_top_articles_hourly IS 'Top 100 most viewed articles of Polish Wikipedia (pl + pl.m, desktop and mobile summed) per hour. One row per hour and rank. Non-article namespaces excluded. Timestamps in UTC.'
