@@ -6,9 +6,25 @@
 import os 
 import requests
 from datetime import datetime, timedelta
+
+dbutils.widgets.text("run_date","","Process date (YYYY-MM-DD)")
 dbutils.widgets.text("process_date","2026-10-09","Process date (YYYY-MM-DD)")
-PROCESS_DATE = dbutils.widgets.get("process_date")
+
+process_date = dbutils.widgets.get("process_date")
+run_date = dbutils.widgets.get("run_date")
+
+if process_date != "":
+    PROCESS_DATE = process_date
+elif run_date != "":
+    run_dt = datetime.strptime(run_date, "%Y-%m-%d")
+    process_dt = run_dt - timedelta(days=1) 
+    PROCESS_DATE = process_dt.strftime("%Y-%m-%d")
+else:
+    raise ValueError("No process date or run date provided")
+
 dt = datetime.strptime(PROCESS_DATE, "%Y-%m-%d")
+print(f"Processing date: {PROCESS_DATE}")
+
 
 BASE_URL = "https://dumps.wikimedia.org/other/pageviews"
 LANDING_PATH = "/Volumes/workspace/landing/wikimedia/pageviews"
