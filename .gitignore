@@ -14,7 +14,8 @@ Thumbs.db
 
 notebooks/explore/
 
+# dbt 
 profiles.yml
-dbt/target/
-dbt/dbt_packages/
-dbt/logs/
+dbt/**/target/
+dbt/**/dbt_packages/
+logs/
