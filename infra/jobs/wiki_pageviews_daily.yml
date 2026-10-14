@@ -1,0 +1,61 @@
+resources:
+  jobs:
+    wiki_pageviews_daily:
+      name: wiki_pageviews_daily
+      email_notifications:
+        on_failure:
+          - ${var.notification_email}
+      schedule:
+        quartz_cron_expression: 31 0 6 * * ?
+        timezone_id: Europe/Warsaw
+        pause_status: PAUSED
+      tasks:
+        - task_key: ingest_to_landing
+          notebook_task:
+            notebook_path: notebooks/01_ingest_to_landing
+            source: GIT
+          max_retries: 2
+          min_retry_interval_millis: 180000
+          disable_auto_optimization: false
+          timeout_seconds: 1800
+          environment_key: Default
+        - task_key: landing_to_bronze
+          depends_on:
+            - task_key: ingest_to_landing
+          notebook_task:
+            notebook_path: notebooks/02_landing_to_bronze
+            source: GIT
+          timeout_seconds: 1800
+          environment_key: Default
+        - task_key: bronze_to_silver
+          depends_on:
+            - task_key: landing_to_bronze
+          notebook_task:
+            notebook_path: notebooks/03_bronze_to_silver
+            source: GIT
+          timeout_seconds: 1800
+          environment_key: Default
+        - task_key: silver_to_gold
+          depends_on:
+            - task_key: bronze_to_silver
+          notebook_task:
+            notebook_path: notebooks/04_silver_to_gold
+            source: GIT
+          timeout_seconds: 1800
+          environment_key: Default
+      git_source:
+        git_url: https://github.com/Hubserr/wiki-pageviews-lakehouse
+        git_provider: gitHub
+        git_branch: main
+      queue:
+        enabled: true
+      parameters:
+        - name: process_date
+          default: ""
+        - name: run_date
+          default: "{{job.trigger.time.iso_date}}"
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "6"
+      performance_target: PERFORMANCE_OPTIMIZED
