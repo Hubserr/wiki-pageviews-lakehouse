@@ -33,4 +33,6 @@ models:
   wiki_pageviews:
     staging:
       +materialized: view
+    marts:
+      +materialized: table
    
