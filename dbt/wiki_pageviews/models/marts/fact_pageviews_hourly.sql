@@ -1,5 +1,17 @@
+{{
+    config(
+        materialized='incremental',
+        incremental_strategy ='replace_where',
+        incremental_predicates = ["date_key = " ~(var('process_date')|replace('-',''))]
+    )
+}}
+
+
 with pageviews as (
     select * from {{ref('stg_pageviews') }}
+    {% if is_incremental() %}
+    where view_date = '{{ var("process_date") }}'
+    {% endif %}
 ),
 
 projects as (
