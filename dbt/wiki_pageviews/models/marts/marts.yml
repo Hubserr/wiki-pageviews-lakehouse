@@ -2,6 +2,10 @@ version: 2
 
 models:
   - name: dim_project
+    description: >
+      Wikimedia project dimension. One row per domain_code from the pageview dumps.
+      Language and project family are derived from domain_code using the
+      wikimedia_project_codes and languages seeds.
     columns:
       - name: project_key
         data_tests:
@@ -17,12 +21,18 @@ models:
               arguments:
                 values: ["desktop", "mobile"]
   - name: dim_date
+    description: >
+      Calendar dimension for 2026-2027. One row per day.
+      Generated, not loaded from source data.
     columns:
       - name: date_key
         data_tests:
           - unique
           - not_null
   - name: dim_hour
+    description: >
+      Hour of day dimension. One row per hour (0-23).
+      All hours refer to UTC, not to the reader's local time.
     columns:
       - name: hour_key
         data_tests:
@@ -34,12 +44,18 @@ models:
               arguments:
                 values: ["night", "morning", "afternoon", "evening"]
   - name: dim_page
+    description: >
+      Page dimension. One row per page within a site (site + page_title).
+      The same title on desktop and mobile is one page.
     columns:
       - name: page_key
         data_tests:
           - unique
           - not_null
   - name: fact_pageviews_hourly
+    description: >
+     Hourly Wikimedia pageviews. Grain: one row per project, page, and hour (UTC).
+     Loaded incrementally per day with replace_where on date_key.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
