@@ -15,27 +15,65 @@ models:
         data_tests:
           - accepted_values:
               arguments:
-                values: ['desktop', 'mobile']
+                values: ["desktop", "mobile"]
   - name: dim_date
     columns:
-     - name: date_key
-       data_tests:
-        - unique
-        - not_null
+      - name: date_key
+        data_tests:
+          - unique
+          - not_null
   - name: dim_hour
     columns:
-     - name: hour_key
-       data_tests:
-       - unique
-       - not_null
-     - name: part_of_day_utc
-       data_tests:
-        - accepted_values:
-            arguments:
-              values: ['night', 'morning', 'afternoon', 'evening']
+      - name: hour_key
+        data_tests:
+          - unique
+          - not_null
+      - name: part_of_day_utc
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["night", "morning", "afternoon", "evening"]
   - name: dim_page
     columns:
-    - name: page_key
-      data_tests:
-      - unique
-      - not_null
+      - name: page_key
+        data_tests:
+          - unique
+          - not_null
+  - name: fact_pageviews_hourly
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              ["date_key", "hour_key", "project_key", "page_key"]
+    columns:
+      - name: date_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: hour_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_hour')
+                field: hour_key
+      - name: project_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_project')
+                field: project_key
+      - name: page_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_page')
+                field: page_key
+      - name: view_count
+        data_tests:
+          - not_null
