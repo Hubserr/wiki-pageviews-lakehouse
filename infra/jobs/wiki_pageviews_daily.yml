@@ -24,14 +24,6 @@ resources:
             source: GIT
           timeout_seconds: 1800
           environment_key: Default
-        - task_key: silver_to_gold
-          depends_on:
-            - task_key: bronze_to_silver
-          notebook_task:
-            notebook_path: notebooks/04_silver_to_gold
-            source: GIT
-          timeout_seconds: 1800
-          environment_key: Default
       git_source:
         git_url: https://github.com/Hubserr/wiki-pageviews-lakehouse
         git_provider: gitHub

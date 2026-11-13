@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: top_articles_hourly
+    description: >
+      Top 100 Polish Wikipedia articles for each hour (UTC), desktop and mobile combined.
+      Grain: one row per date, hour and rank. Non-article pages are excluded using dim_page.is_article.
+      Ties on total_views are broken alphabetically by page_title.
+      Loaded incrementally per day with replace_where on date_key.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["date_key", "hour_key", "rank_in_hour"]
+    columns:
+      - name: date_key
+        data_tests:
+          - not_null
+      - name: hour_key
+        data_tests:
+          - not_null
+      - name: rank_in_hour
+        description: Position of the article within the hour, 1 = most viewed.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 100
+      - name: page_title
+        data_tests:
+          - not_null
+      - name: total_views
+        description: Sum of desktop and mobile views in the hour.
+        data_tests:
+          - not_null

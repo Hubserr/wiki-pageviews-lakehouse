@@ -41,4 +41,8 @@ models:
       +persist_docs: 
         relation: true
         columns: true
+    reporting:
+      +persist_docs:
+        relation: true
+        columns: true
    
