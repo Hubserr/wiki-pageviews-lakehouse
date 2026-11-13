@@ -5,6 +5,23 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.sdk import Variable, dag, task
 from airflow.providers.databricks.operators.databricks import DatabricksRunNowOperator
 from include.wiki_s3 import build_url_and_key, object_exists, upload_from_url
+from cosmos import DbtTaskGroup, ExecutionConfig, ProfileConfig, ProjectConfig, RenderConfig
+from cosmos.profiles import DatabricksTokenProfileMapping
+
+DBT_PROJECT_PATH = "/usr/local/airflow/include/dbt/wiki_pageviews"
+DBT_EXECUTABLE_PATH = "/usr/local/airflow/dbt_venv/bin/dbt"
+
+project_config = ProjectConfig(dbt_project_path=DBT_PROJECT_PATH)
+profile_config = ProfileConfig(
+        profile_name="wiki_pageviews",
+        target_name="prod", 
+        profile_mapping=DatabricksTokenProfileMapping(
+            conn_id="databricks_default",
+            profile_args={"catalog": "workspace","schema": "gold"},
+            ),
+        )
+execution_config = ExecutionConfig(dbt_executable_path=DBT_EXECUTABLE_PATH)
+render_config = RenderConfig(should_detach_multiple_parents_tests=True)
 
 
 @dag(
@@ -66,6 +83,18 @@ def wiki_pageviews_daily():
         retries=1
         )
 
-    uploads >> run_job
+    
+
+  
+    dbt_task_group = DbtTaskGroup(group_id="dbt",
+                                  project_config=project_config,
+                                  profile_config=profile_config,
+                                  execution_config=execution_config,
+                                  render_config=render_config,
+                                  operator_args={"vars":{"process_date": "{{ti.xcom_pull(task_ids='resolve_date')}}"}}
+                                  )
+    uploads >> run_job >> dbt_task_group
+
+
 
 wiki_pageviews_daily()
