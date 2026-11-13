@@ -24,7 +24,7 @@ else:
 dt = datetime.strptime(PROCESS_DATE, "%Y-%m-%d")
 print(f"Processing date: {PROCESS_DATE}")
 
-bronze_condition = f"_source_file LIKE '%/{dt:%Y/%m/%d}/%'"
+bronze_condition = f"_source_file LIKE '%/pageviews-{dt:%Y%m%d}-%'"
 silver_condition = f"view_date = '{PROCESS_DATE}'"  
 
 
