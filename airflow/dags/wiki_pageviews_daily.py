@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta,timezone
-
 import requests
 from airflow.sdk.exceptions import AirflowFailException
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.sdk import Variable, dag, task
-
+from airflow.providers.databricks.operators.databricks import DatabricksRunNowOperator
 from include.wiki_s3 import build_url_and_key, object_exists, upload_from_url
+
+
 @dag(
     schedule="0 6 * * *",
     start_date=datetime(2026,10,1),
@@ -25,11 +26,12 @@ def wiki_pageviews_daily():
         if process_dt.date() >= today_utc:
             raise AirflowFailException(
                 f"Data date {data_date} is today or in the future (today UTC: {today_utc}). "
-            "Only complete past days can be processed."
-        )
-        print(f"Logical date: {logical_date}, data date: {process_dt}")
+                "Only complete past days can be processed."
+            )
+        print(f"Logical date: {logical_date}, data date: {data_date}")
         
         return data_date
+    
     @task(max_active_tis_per_dagrun=2)
     def upload_hour(process_date:str, hour:int):
         bucket = Variable.get("s3_bucket")
@@ -45,14 +47,25 @@ def wiki_pageviews_daily():
             upload_from_url(s3, bucket, url, key)
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
-                raise AirflowFailException(f"File not found (404) for {process_date} hour {hour:02d}")
+                raise AirflowFailException(f"File not found (404) for {process_date} hour {hour:02d} in {url}")
             else:
                 raise
 
         print(f">>> Uploaded {key}")
         return "uploaded"
-
+    
     process_date = resolve_date()
-    upload_hour.partial(process_date=process_date).expand(hour=list(range(24)))
+    uploads = upload_hour.partial(process_date=process_date).expand(hour=list(range(24)))
+
+    run_job = DatabricksRunNowOperator(
+        databricks_conn_id="databricks_default",
+        task_id="run_databricks_job",
+        job_name="wiki_pageviews_daily",
+        job_parameters={"process_date":process_date},
+        deferrable=True,
+        retries=1
+        )
+
+    uploads >> run_job
 
 wiki_pageviews_daily()
