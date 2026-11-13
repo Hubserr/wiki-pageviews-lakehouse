@@ -10,18 +10,7 @@ resources:
         timezone_id: Europe/Warsaw
         pause_status: PAUSED
       tasks:
-        - task_key: ingest_to_landing
-          notebook_task:
-            notebook_path: notebooks/01_ingest_to_landing
-            source: GIT
-          max_retries: 2
-          min_retry_interval_millis: 180000
-          disable_auto_optimization: false
-          timeout_seconds: 1800
-          environment_key: Default
         - task_key: landing_to_bronze
-          depends_on:
-            - task_key: ingest_to_landing
           notebook_task:
             notebook_path: notebooks/02_landing_to_bronze
             source: GIT
