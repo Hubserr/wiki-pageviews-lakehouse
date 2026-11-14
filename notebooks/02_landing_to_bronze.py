@@ -6,8 +6,8 @@
 from datetime import datetime, timedelta
 from pyspark.sql import functions as F
 
-dbutils.widgets.text("run_date","","Process date (YYYY-MM-DD)")
-dbutils.widgets.text("process_date","2026-10-09","Process date (YYYY-MM-DD)")
+dbutils.widgets.text("run_date","","Run date (YYYY-MM-DD)")
+dbutils.widgets.text("process_date","","Process date (YYYY-MM-DD)")
 
 process_date = dbutils.widgets.get("process_date")
 run_date = dbutils.widgets.get("run_date")

@@ -11,5 +11,7 @@ CREATE SCHEMA IF NOT EXISTS workspace.silver
 CREATE SCHEMA IF NOT EXISTS workspace.gold
     COMMENT 'Business-ready data: dimensional model (facts and dimensions)';
 
-CREATE VOLUME IF NOT EXISTS workspace.landing.wikimedia
+-- Requires storage crediential and external location (databricks->catalog->connect)
+CREATE EXTERNAL VOLUME IF NOT EXISTS workspace.landing.pageviews_s3
+    LOCATION 's3://hubserr-wiki-pageviews-landing/pageviews/'
     COMMENT 'Raw Wikimedia pageview dump files (.gz)';
